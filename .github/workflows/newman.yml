@@ -28,7 +28,7 @@ jobs:
             --reporter-htmlextra-export rapport.html
 
       - name: Upload HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: newman-report
