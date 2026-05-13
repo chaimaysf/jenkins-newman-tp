@@ -26,16 +26,30 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            publishHTML([
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: '.',
-                reportFiles: 'rapport.html',
-                reportName: 'Newman Report'
-            ])
-        }
+   post {
+    always {
+        publishHTML([
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: '.',
+            reportFiles: 'rapport.html',
+            reportName: 'Newman Report'
+        ])
+    }
+    success {
+        emailext(
+            subject: "✅ Build SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Tous les tests ont passé. Rapport disponible : ${env.BUILD_URL}Newman_20Report",
+            attachmentsPattern: 'rapport.html',
+            to: 'chaimaysf2000@gmail.com'
+        )
+    }
+    failure {
+        emailext(
+            subject: "❌ Build FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Des tests ont échoué. Voir les logs : ${env.BUILD_URL}console",
+            to: 'chaimaysf2000@gmail.com'
+        )
     }
 }
