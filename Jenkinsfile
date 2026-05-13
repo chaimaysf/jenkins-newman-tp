@@ -30,6 +30,8 @@ pipeline {
         always {
             publishHTML([
                 allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
                 reportDir: '.',
                 reportFiles: 'rapport.html',
                 reportName: 'Newman Report'
