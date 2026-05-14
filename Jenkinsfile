@@ -28,15 +28,17 @@ pipeline {
             }
         }
         stage('Run Tests') {
-            steps {
-                sh '''
-                newman run "https://api.getpostman.com/collections/40596805-6f02b1ee-0a49-4a22-98f3-47448fd8dfba?apikey=${POSTMAN_API_KEY}" \
-                  --environment "https://api.getpostman.com/environments/${ENV_ID}?apikey=${POSTMAN_API_KEY}" \
-                  --reporters cli,htmlextra \
-                  --reporter-htmlextra-export rapport.html
-                '''
-            }
+    steps {
+        script {
+            sh """
+            newman run "https://api.getpostman.com/collections/40596805-6f02b1ee-0a49-4a22-98f3-47448fd8dfba?apikey=${POSTMAN_API_KEY}" \
+              --environment "https://api.getpostman.com/environments/${env.ENV_ID}?apikey=${POSTMAN_API_KEY}" \
+              --reporters cli,htmlextra \
+              --reporter-htmlextra-export rapport.html
+            """
         }
+    }
+}
     }
     post {
         always {
