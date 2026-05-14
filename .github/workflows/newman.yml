@@ -1,44 +1,45 @@
 name: Newman API Tests
-
 on:
   push:
     branches:
       - main
-
+      - develop
+      - staging
 jobs:
   newman-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
-
       - name: Run Newman tests
         env:
           ENV_TEST: "40596805-5c017c26-00d5-42eb-9c57-f8fcf7f75435"
           ENV_PP: "40596805-9322285f-dfa1-4c25-b40e-b8c59ae94892"
           ENV_PROD: "40596805-a958d3da-1158-4003-9e61-9171ca2e3186"
         run: |
+          if [ "${{ github.ref_name }}" == "develop" ]; then
+            ENV_ID=$ENV_TEST
+          elif [ "${{ github.ref_name }}" == "staging" ]; then
+            ENV_ID=$ENV_PP
+          else
+            ENV_ID=$ENV_PROD
+          fi
           newman run "https://api.getpostman.com/collections/40596805-6f02b1ee-0a49-4a22-98f3-47448fd8dfba?apikey=${{ secrets.POSTMAN_API_KEY }}" \
-            --environment "https://api.getpostman.com/environments/$ENV_TEST?apikey=${{ secrets.POSTMAN_API_KEY }}" \
+            --environment "https://api.getpostman.com/environments/$ENV_ID?apikey=${{ secrets.POSTMAN_API_KEY }}" \
             --reporters cli,htmlextra \
             --reporter-htmlextra-export rapport.html
-
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: newman-report
           path: rapport.html
-          
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -48,12 +49,11 @@ jobs:
           secure: true
           username: ${{ secrets.GMAIL_USER }}
           password: ${{ secrets.GMAIL_PASSWORD }}
-          subject: "✅ Build SUCCESS - ${{ github.repository }} #${{ github.run_number }}"
-          body: "Tous les tests ont passé. Rapport disponible dans les artifacts : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          subject: "✅ [${{ github.ref_name }}] Build SUCCESS #${{ github.run_number }}"
+          body: "Tests passés sur ${{ github.ref_name }}."
           to: ${{ secrets.GMAIL_USER }}
           from: ${{ secrets.GMAIL_USER }}
           attachments: rapport.html
-
       - name: Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -63,7 +63,7 @@ jobs:
           secure: true
           username: ${{ secrets.GMAIL_USER }}
           password: ${{ secrets.GMAIL_PASSWORD }}
-          subject: "❌ Build FAILURE - ${{ github.repository }} #${{ github.run_number }}"
-          body: "Des tests ont échoué. Voir les logs : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          subject: "❌ [${{ github.ref_name }}] Build FAILURE #${{ github.run_number }}"
+          body: "Tests échoués sur ${{ github.ref_name }}."
           to: ${{ secrets.GMAIL_USER }}
           from: ${{ secrets.GMAIL_USER }}
