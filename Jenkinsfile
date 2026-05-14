@@ -7,6 +7,10 @@ pipeline {
 
     environment {
         POSTMAN_API_KEY = credentials('postman-api-key')
+        ENV_TEST = "40596805-5c017c26-00d5-42eb-9c57-f8fcf7f75435"
+        ENV_PP = "40596805-9322285f-dfa1-4c25-b40e-b8c59ae94892"
+        ENV_PROD = "40596805-a958d3da-1158-4003-9e61-9171ca2e3186"
+
     }
 
     stages {
@@ -19,9 +23,10 @@ pipeline {
             steps {
                 sh '''
                 newman run "https://api.getpostman.com/collections/40596805-6f02b1ee-0a49-4a22-98f3-47448fd8dfba?apikey=${POSTMAN_API_KEY}" \
-                  --reporters cli,htmlextra \
-                  --reporter-htmlextra-export rapport.html
-                '''
+                --environment "https://api.getpostman.com/environments/${ENV_TEST}?apikey=${POSTMAN_API_KEY}" \
+                --reporters cli,htmlextra \
+                --reporter-htmlextra-export rapport.html
+                    '''
             }
         }
     }
